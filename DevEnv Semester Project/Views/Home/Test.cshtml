@@ -1,0 +1,19 @@
+﻿
+@{
+    ViewBag.Title = "Test";
+}
+
+<h2>Test</h2>
+
+<button id="test">click</button>
+
+@section Scripts{
+    <script>
+        $("#test").click(function () {
+
+            jQuery.post("/home/test", { "level": { "1": "2", "2": "3" }});
+        });
+
+    </script>
+   
+    }

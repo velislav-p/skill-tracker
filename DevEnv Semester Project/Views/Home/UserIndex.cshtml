@@ -1,0 +1,197 @@
+﻿@using Microsoft.AspNet.Identity
+@model DevEnv_Semester_Project.Models.UserDashboardViewModel
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron" style="background-image:url(@Model.Company.CompanyLogoUrl);">
+    <h1>Welcome @User.Identity.GetUserName()</h1>
+    <p>In your profile you can indicate how much experience you have with certain skills that are valuable to your employer as well as choose focus areas for the year.</p>
+    @if (Model.IsAdmin)
+    {
+        <span>@Html.ActionLink("Visit your company profile", "AdminIndex", "Home", new {@class= "btn btn-default" })</span>
+    }
+
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <h2>Current Skills</h2>
+        <hr />
+        <p>Here you can see all of your current skills and the respective levels of mastery! (If you don't see any skills, you must be the janitor and idk how you got an account in the first place)</p>
+        <div class="list-group">
+            @foreach (var item in Model.UserCurrentSkills)
+            {
+                <div class="list-group-item list-group-item-action flex-column align-items-start">
+                    <div style="display:flex; justify-content:space-between;" class="d-flex w-100 justify-content-between">
+                        <span class="h3 mb-1">@item.Skill.Name</span>
+                        <small class="mb-1">@item.SkillLevel.SkillMastery</small>
+                    </div>
+                    
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-md-6">
+        <h2>Add Skills to your profile!</h2>
+        <hr />
+        <p>Your employer demands you have some skills, otherwise you're getting the boot next quarter. Tick Tock!</p>
+        @using (Html.BeginForm("UserAddSkill", "Home", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+        {
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                @Html.LabelFor(m => m.SelectedSkill, new { @class = "col-md-5 control-label" })
+                <div class="col-md-5">
+                   @Html.DropDownListFor(m => m.SelectedSkill, new SelectList(Model.AvailableSkills, "Value", "Text"), new { @class = "form-control" })
+</div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.SelectedLevel, new { @class = "col-md-5 control-label" })
+                <div class="col-md-5">
+                    @Html.DropDownListFor(m => m.SelectedLevel, new SelectList(Model.AvailableLevels, "Value", "Text"), new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-10">
+                    <input type="submit" class="btn btn-default" value="Save skill" />
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <h2>Employees' skill levels</h2>
+        <hr />
+        <table class="table table-striped">
+            <thead></thead>
+            <tbody>
+                @foreach (var item in Model.Employees)
+                {
+                <tr>
+                    <td>
+                        @Ajax.ActionLink(
+                        item.UserName,
+                        "ShowSkillLevels",
+                        "Home",
+                        new { id = item.Id },
+                        new AjaxOptions { UpdateTargetId = "result_" + item.Id, InsertionMode = InsertionMode.Replace },
+                        new { @class = "employee" }
+                    )
+                        <div id="result_@item.Id"></div>
+                    </td>
+                    
+                </tr>
+                }
+            </tbody>
+           
+        </table>
+</div>
+    <div class="col-md-4">
+        <h2>Choose yearly focus</h2>
+        <hr />
+            @foreach (var item in Model.SkillsForFocus)
+            {
+                <div id="@item.SkillId" class="skillForFocus checkbox"><label><input type="checkbox" data-id="@item.SkillId" />@item.Name</label></div>
+            }
+        
+        <input id="setFocus" class="btn btn-default" type="submit" value="Set Focus" />
+        <div id="error-msg"></div>
+    </div>
+    <div class="col-md-4">
+        <h2>Your current focus</h2>
+        <hr />
+        <ul id="currentFocus">
+            @foreach (var item in Model.Focus)
+            {
+                <li>@item.Skill.Name</li>
+            }
+        </ul>
+    </div>
+</div>
+
+@section Scripts{
+    
+<script>
+    var skillsForFocus = [];
+        var skillsForDisplay = [];
+    $('input:checkbox').prop('checked', false);
+
+    $(document).on("click", "input[type=checkbox]", function () {
+
+            var checkbox = $(this).attr("data-id");
+            var skillName = $(this).parent().text();
+
+            if ($(this).is(":checked")) {
+                skillsForFocus.push(checkbox);
+                skillsForDisplay.push(skillName);
+                console.log(skillsForFocus);
+            } else {
+                for (var i = 0; i < skillsForFocus.length; i++) {
+                    if (checkbox == skillsForFocus[i]) {
+                        skillsForFocus.splice(i, 1);
+                        skillsForDisplay.splice(i, 1);
+                        console.log(skillsForFocus);
+                    }
+                }
+            }
+        })
+    $("#setFocus").click(function (){
+            if (skillsForFocus.length > 3) {
+            $("#error-msg").text("You can pick up to three areas of focus!")
+            } else {
+            $.ajax({
+                    "url": "/Home/SetFocus",
+                "method": "POST",
+                "dataType": "JSON",
+                "data": { "arrayOfSkills": skillsForFocus },
+                "cache": false
+            }).done(function (jData) {
+                    if (jData.result == "success") {
+                    $("#currentFocus").empty();
+                        skillsForDisplay.forEach(function (skill) {
+                        $("#currentFocus").append("<li>" + skill + "</li>");
+                            skillsForFocus = [];
+                            skillsForDisplay = [];
+                        $('input:checkbox').prop('checked', false);
+                        })
+                }
+                })
+        }
+        })
+ 
+    //$(document).on("click", ".employee", function () {
+    //    if ($(this).hasClass("active")) {
+    //        $(this).removeClass("active");
+    //        $(this).child("ul").empty();
+    //    } else {
+    //        var employeeId = $(this).attr("id");
+    //        $.ajax({
+    //            "url": "/Home/ShowSkillLevels",
+    //            "method": "POST",
+    //            "dataType": "JSON",
+    //            "data": { "userId": employeeId },
+    //            "cache": false
+    //        }).done(function (jData) {
+    //            console.log(jData);
+    //        })
+    //    }
+    //})
+
+  @*<ul>
+            @foreach (var item in Model.Employees)
+    {
+        <li class="employee" id="@item.Id">
+            @item.UserName
+            <ul id="skills_@item.Id"></ul>
+        </li>
+        }
+</ul>*@
+    
+    
+
+</script>
+    
+    
+    }

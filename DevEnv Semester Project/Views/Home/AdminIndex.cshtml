@@ -1,0 +1,111 @@
+﻿@using Microsoft.AspNet.Identity
+@model DevEnv_Semester_Project.Models.AdminDashboardViewModel
+
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron">
+    <h1>Welcome to @Model.Company.Name's company dashboard!</h1>
+    <p>Here you can add skills to your company's profile and have an overview of your employees' mastery of those skills. You can also observe the current focus of the work force.</p>
+    
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <h2>Reference code</h2>  
+        <hr />      
+        <span class="text-info"> @Model.Company.ReferenceCode</span>
+        <p>Distribute this code to your colleagues to allow them to register as employees of this company</p>
+        
+    </div>
+   <div class="col-md-6">
+       <h2>Employee profile</h2>
+       <hr />
+       <p>Remember to fill out your employee profile.</p>
+       <p>@Html.ActionLink("Employee profile", "Userindex", "Home", new {@class = "btn btn-default" })</p>
+   </div>
+</div>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+            @Html.Partial("_CreateSkill", new DevEnv_Semester_Project.Models.Skill())
+    </div>
+    <div class="col-md-6">
+        <h2>Current skills in the company</h2>
+        <hr />
+        <ul>
+            @foreach (var item in Model.Skills)
+            {
+                <li>@item.Name</li>
+            }
+        </ul>     
+    </div>
+</div>
+
+
+<div class="row">
+
+    <div class="col-md-6">
+        <h2>Employees and their skill levels</h2>
+        <hr />
+        <ul id="employeesList">
+            @foreach (var item in Model.Employees)
+            {
+                <li>
+                    @Ajax.ActionLink(
+                    item.UserName,
+                    "ShowSkillLevels",
+                    "Home",
+                    new { id = item.Id },
+                    new AjaxOptions { UpdateTargetId = "lbl-skill-level-" + item.Id, InsertionMode = InsertionMode.Replace }
+
+                    )
+                </li>
+                <div id="lbl-skill-level-@item.Id"></div>
+            }
+        </ul>
+      
+    </div>
+
+    <div class="col-md-6">
+        <h2>Employee yearly focus</h2>
+        <hr />
+        <ul>
+            @foreach (var item in Model.Employees)
+            {
+                <li>
+                    @Ajax.ActionLink(
+                    item.UserName,
+                    "ShowFocus",
+                    "Home",
+                    new { id = item.Id },
+                    new AjaxOptions { UpdateTargetId = "lbl-focus-" + item.Id, InsertionMode = InsertionMode.Replace }
+
+                    )
+                </li>
+                <div id="lbl-focus-@item.Id"></div>
+            }
+        </ul>
+    </div>
+</div>
+
+
+@section Scripts{
+    <script src="~/Scripts/jquery.signalR-2.2.1.min.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script>
+        var myHub = $.connection.myHub;
+
+        myHub.client.newEmployee = function (Employee) {
+            console.log("This is the end");
+            $("#employeesList").append("<li>"+Employee+"</li>");
+        }
+
+        $.connection.hub.start().done(function () {
+            })
+            
+    </script>
+
+    }
