@@ -186,10 +186,6 @@
     <Compile Include="Migrations\201612152013096_StartingFresh.Designer.cs">
       <DependentUpon>201612152013096_StartingFresh.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201702171103589_required-in-Skill.cs" />
-    <Compile Include="Migrations\201702171103589_required-in-Skill.Designer.cs">
-      <DependentUpon>201702171103589_required-in-Skill.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\IdentityModels.cs" />
@@ -359,9 +355,6 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201612152013096_StartingFresh.resx">
       <DependentUpon>201612152013096_StartingFresh.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201702171103589_required-in-Skill.resx">
-      <DependentUpon>201702171103589_required-in-Skill.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
