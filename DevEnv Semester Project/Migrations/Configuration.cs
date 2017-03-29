@@ -9,7 +9,7 @@ namespace DevEnv_Semester_Project.Migrations
     {
         public Configuration()
         {
-            AutomaticMigrationsEnabled = false;
+            AutomaticMigrationsEnabled = true;
         }
 
         protected override void Seed(DevEnv_Semester_Project.Models.ApplicationDbContext context)
